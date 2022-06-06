@@ -1,5 +1,6 @@
 {
   "dependencies": {
-    "react-beforeunload": "^2.5.3"
+    "react-beforeunload": "^2.5.3",
+    "uuid": "^8.3.2"
   }
 }
