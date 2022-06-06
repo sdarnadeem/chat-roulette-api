@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { io } from "socket.io-client";
 import c from "./Video.module.css";
 import peer from "../utils/peer";
@@ -12,12 +12,13 @@ const Video = () => {
       "my-custom-header": "abcd",
     },
   });
+  const userId = peer._id;
 
   useEffect(() => {
     window.addEventListener("beforeunload", function (event) {
-      socket.emit("disconnect", "userid");
+      socket.emit("unload", userId);
     });
-  }, [socket]);
+  }, [socket, userId]);
 
   useEffect(() => {
     navigator.mediaDevices
@@ -38,7 +39,9 @@ const Video = () => {
     console.log(socket.id); // x8WIv7-mJelg7on_ALbx
   });
 
-  socket.on("user-connected", (userId) => {});
+  socket.on("user-connected", (userId) => {
+    console.log(userId);
+  });
 
   const conn = peer.connect("another-peers-id");
   conn.on("open", () => {
@@ -47,7 +50,7 @@ const Video = () => {
 
   const handleSearch = () => {
     // const text = textRef.current.value;
-    socket.emit("find-someone");
+    socket.emit("find-someone", userId);
   };
   return (
     <>
