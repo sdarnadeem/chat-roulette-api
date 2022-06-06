@@ -1,11 +1,17 @@
 import React, { useRef, useEffect } from "react";
 import { io } from "socket.io-client";
 import c from "./Video.module.css";
+import peer from "../utils/peer";
 
 const Video = () => {
   const videoRef = useRef();
-  const textRef = useRef();
-  const socket = io("http://localhost:3000");
+  //   const textRef = useRef();
+  const socket = io("http://localhost:3000", {
+    withCredentials: true,
+    extraHeaders: {
+      "my-custom-header": "abcd",
+    },
+  });
 
   useEffect(() => {
     window.addEventListener("beforeunload", function (event) {
@@ -32,9 +38,16 @@ const Video = () => {
     console.log(socket.id); // x8WIv7-mJelg7on_ALbx
   });
 
+  socket.on("user-connected", (userId) => {});
+
+  const conn = peer.connect("another-peers-id");
+  conn.on("open", () => {
+    conn.send("hi!");
+  });
+
   const handleSearch = () => {
-    const text = textRef.current.value;
-    socket.emit("find-someone", text);
+    // const text = textRef.current.value;
+    socket.emit("find-someone");
   };
   return (
     <>
@@ -45,7 +58,7 @@ const Video = () => {
           search
         </button>
       </div>
-      <input type="text" ref={textRef} />
+      {/* <input type="text" ref={textRef} /> */}
     </>
   );
 };
