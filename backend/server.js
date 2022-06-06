@@ -15,6 +15,11 @@ const io = new Server(httpServer, {
 
 io.on("connection", (socket) => {
   console.log("connected");
+  socket.on("find-someone", (userId) => {});
+
+  socket.on("disconnect", (reason) => {
+    console.log("reason");
+  });
 });
 
 httpServer.listen(3000);
