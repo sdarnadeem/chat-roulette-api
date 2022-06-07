@@ -1,15 +1,18 @@
 const express = require("express");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
+const cors = require("cors");
 
 const app = express();
+app.use(cors());
 const httpServer = createServer(app);
 
 const users = new Set();
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "https://chat-roulette-drab.vercel.app/",
+    // origin: "https://chat-roulette-drab.vercel.app/",
+    origin: "http://localhost:3001",
     allowedHeaders: ["my-custom-header"],
     credentials: true,
   },
