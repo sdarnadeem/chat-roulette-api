@@ -1,18 +1,18 @@
 import React, { useState, useRef, useEffect } from "react";
 import { io } from "socket.io-client";
 import c from "./Video.module.css";
-import peer from "../utils/peer";
 
 const Video = () => {
+  const [userId, setUserId] = useState();
+  const [calling, setCalling] = useState(false);
   const videoRef = useRef();
-  //   const textRef = useRef();
+  const videoRef2 = useRef();
   const socket = io("http://localhost:3000", {
     withCredentials: true,
     extraHeaders: {
       "my-custom-header": "abcd",
     },
   });
-  const userId = peer._id;
 
   useEffect(() => {
     window.addEventListener("beforeunload", function (event) {
@@ -43,22 +43,22 @@ const Video = () => {
     console.log(userId);
   });
 
-  const conn = peer.connect("another-peers-id");
-  conn.on("open", () => {
-    conn.send("hi!");
+  socket.on("me", (userId) => {
+    setUserId(userId);
   });
 
   const handleSearch = () => {
     // const text = textRef.current.value;
-    socket.emit("find-someone", userId);
+    // socket.emit("find-someone", userId);
   };
   return (
     <>
       <div className={c.container}>
         <video ref={videoRef} className={c.video} />
+        <video ref={videoRef2} className={c.video2} />
 
         <button onClick={handleSearch} className={c.button}>
-          search
+          {calling ? "swipe" : "search"}
         </button>
       </div>
       {/* <input type="text" ref={textRef} /> */}

@@ -11,6 +11,15 @@
   height: 100%;
 }
 
+.video2 {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  background-color: black;
+  bottom: 0;
+  right: 0;
+}
+
 .button {
   position: absolute;
   bottom: 0;
@@ -20,9 +29,10 @@
   border-radius: 4px;
   color: white;
   padding: 8px 17px;
-  right: 50%;
+  /* right: 50%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%); */
+  margin-left: 3rem;
   cursor: pointer;
   text-transform: uppercase;
   font-weight: bold;
