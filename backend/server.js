@@ -9,7 +9,7 @@ const users = new Set();
 
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:3001",
+    origin: "https://chat-roulette-i0g4uz583-sdarnadeem.vercel.app/",
     allowedHeaders: ["my-custom-header"],
     credentials: true,
   },

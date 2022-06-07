@@ -12,7 +12,7 @@ const Video = () => {
   const incommingVideo = useRef();
 
   const socket = useMemo(() => {
-    return io("http://localhost:3000", {
+    return io("https://chatroultte.herokuapp.com", {
       withCredentials: true,
       extraHeaders: {
         "my-custom-header": "abcd",
