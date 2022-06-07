@@ -20,6 +20,17 @@ const Video = () => {
     });
   }, []);
 
+  const peer1 = new Peer({
+    initiator: true,
+    trickle: false,
+    stream: stream,
+  });
+  const peer2 = new Peer({
+    initiator: true,
+    trickle: false,
+    stream: stream,
+  });
+
   useEffect(() => {
     window.addEventListener("beforeunload", function (event) {
       socket.emit("unload", userId);
@@ -37,10 +48,10 @@ const Video = () => {
       })
       .then((stream) => {
         setStream(stream);
-        myVideo.current.srcObject = stream;
-        myVideo.current.addEventListener("loadedmetadata", () => {
-          myVideo.current.play();
-          myVideo.current.muted = true;
+        incommingVideo.current.srcObject = stream;
+        incommingVideo.current.addEventListener("loadedmetadata", () => {
+          incommingVideo.current.play();
+          incommingVideo.current.muted = true;
         });
       });
   }, []);
@@ -58,57 +69,47 @@ const Video = () => {
   // });
 
   const callUser = (id) => {
-    const peer = new Peer({
-      initiator: true,
-      trickle: false,
-      stream: stream,
-    });
-    peer.on("signal", (data) => {
-      socket.emit("callUser", {
-        userToCall: id,
-        signalData: data,
-        from: userId,
-      });
-    });
-    peer.on("stream", (stream) => {
-      incommingVideo.current.srcObject = stream;
-    });
-    socket.on("callAccepted", (signal) => {
-      setCalling(true);
-      peer.signal(signal);
+    setCalling(true);
+
+    peer1.on("signal", (data) => {
+      peer2.signal(data);
     });
 
-    // connectionRef.current = peer;
+    peer2.on("signal", (data) => {
+      peer1.signal(data);
+    });
+    peer2.on("stream", (stream) => {
+      incommingVideo.current.srcObject = stream;
+    });
   };
 
   const answerCall = () => {
     setCalling(true);
-    const peer = new Peer({
-      initiator: false,
-      trickle: false,
-      stream: stream,
-    });
-    peer.on("signal", (data) => {
-      socket.emit("answerCall", { signal: data, to: reciever });
-    });
-    peer.on("stream", (stream) => {
-      incommingVideo.current.srcObject = stream;
+
+    peer1.on("signal", (data) => {
+      peer2.signal(data);
     });
 
-    // peer.signal(callerSignal);
-    peer.signal(reciever);
-    // connectionRef.current = peer;
+    peer2.on("signal", (data) => {
+      peer1.signal(data);
+    });
+    peer1.on("stream", (stream) => {
+      incommingVideo.current.srcObject = stream;
+    });
   };
+
   socket.on("make-call", (userId) => {
     console.log("made call", userId);
     callUser(userId);
+    myVideo.current.srcObject = stream;
   });
 
   socket.on("answer-call", (userId) => {
     console.log("recieve call", userId);
 
     setReciever(userId);
-    // answerCall(userId);
+    answerCall(userId);
+    myVideo.current.srcObject = stream;
   });
   socket.on("error", (err) => {
     console.log(err);
@@ -120,8 +121,8 @@ const Video = () => {
   return (
     <>
       <div className={c.container}>
-        <video ref={myVideo} className={c.video} />
-        <video ref={incommingVideo} className={c.video2} />
+        <video ref={incommingVideo} className={c.video} />
+        <video ref={myVideo} className={c.video2} />
 
         <button onClick={handleSearch} className={c.button}>
           {calling ? "swipe" : "search"}
