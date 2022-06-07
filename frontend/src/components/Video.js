@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from "react";
 import { io } from "socket.io-client";
 import c from "./Video.module.css";
-import { Peer } from "simple-peer";
+import Peer from "simple-peer";
 
 const Video = () => {
   const [userId, setUserId] = useState();
@@ -53,9 +53,9 @@ const Video = () => {
     console.log(userId);
   });
 
-  socket.on("found-one", (userId) => {
-    setReciever(userId);
-  });
+  // socket.on("found-one", (userId) => {
+  //   setReciever(userId);
+  // });
 
   const callUser = (id) => {
     const peer = new Peer({
@@ -104,11 +104,14 @@ const Video = () => {
     callUser(userId);
   });
 
-  socket.on("recieve-call", (userId) => {
+  socket.on("answer-call", (userId) => {
     console.log("recieve call", userId);
 
     setReciever(userId);
-    answerCall(userId);
+    // answerCall(userId);
+  });
+  socket.on("error", (err) => {
+    console.log(err);
   });
 
   const handleSearch = () => {
