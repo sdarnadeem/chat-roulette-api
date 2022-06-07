@@ -1,5 +1,24 @@
-import { Peer } from "peerjs";
+import Peer from "simple-peer";
 
-const peer = new Peer();
+const callUser = (id, stream, socket, me, name, videoRef) => {
+  const peer = new Peer({
+    initiator: true,
+    trickle: false,
+    stream,
+  });
 
-export default peer;
+  peer.on("signal", (data) => {
+    socket.emit("callUser", {
+      userToCall: id,
+      signalData: data,
+      from: me,
+      name: name,
+    });
+  });
+
+  peer.on("stream", (stream) => {
+    videoRef.current.srcObject = stream;
+  });
+};
+
+export default callUser;

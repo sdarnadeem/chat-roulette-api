@@ -1,22 +1,31 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { io } from "socket.io-client";
 import c from "./Video.module.css";
+import { Peer } from "simple-peer";
 
 const Video = () => {
   const [userId, setUserId] = useState();
+  const [reciever, setReciever] = useState();
+  const [stream, setStream] = useState();
   const [calling, setCalling] = useState(false);
-  const videoRef = useRef();
-  const videoRef2 = useRef();
-  const socket = io("http://localhost:3000", {
-    withCredentials: true,
-    extraHeaders: {
-      "my-custom-header": "abcd",
-    },
-  });
+  const myVideo = useRef();
+  const incommingVideo = useRef();
+
+  const socket = useMemo(() => {
+    return io("http://localhost:3000", {
+      withCredentials: true,
+      extraHeaders: {
+        "my-custom-header": "abcd",
+      },
+    });
+  }, []);
 
   useEffect(() => {
     window.addEventListener("beforeunload", function (event) {
       socket.emit("unload", userId);
+    });
+    socket.on("me", (userId) => {
+      setUserId(userId);
     });
   }, [socket, userId]);
 
@@ -27,10 +36,11 @@ const Video = () => {
         audio: true,
       })
       .then((stream) => {
-        videoRef.current.srcObject = stream;
-        videoRef.current.addEventListener("loadedmetadata", () => {
-          videoRef.current.play();
-          videoRef.current.muted = true;
+        setStream(stream);
+        myVideo.current.srcObject = stream;
+        myVideo.current.addEventListener("loadedmetadata", () => {
+          myVideo.current.play();
+          myVideo.current.muted = true;
         });
       });
   }, []);
@@ -43,19 +53,72 @@ const Video = () => {
     console.log(userId);
   });
 
-  socket.on("me", (userId) => {
-    setUserId(userId);
+  socket.on("found-one", (userId) => {
+    setReciever(userId);
+  });
+
+  const callUser = (id) => {
+    const peer = new Peer({
+      initiator: true,
+      trickle: false,
+      stream: stream,
+    });
+    peer.on("signal", (data) => {
+      socket.emit("callUser", {
+        userToCall: id,
+        signalData: data,
+        from: userId,
+      });
+    });
+    peer.on("stream", (stream) => {
+      incommingVideo.current.srcObject = stream;
+    });
+    socket.on("callAccepted", (signal) => {
+      setCalling(true);
+      peer.signal(signal);
+    });
+
+    // connectionRef.current = peer;
+  };
+
+  const answerCall = () => {
+    setCalling(true);
+    const peer = new Peer({
+      initiator: false,
+      trickle: false,
+      stream: stream,
+    });
+    peer.on("signal", (data) => {
+      socket.emit("answerCall", { signal: data, to: reciever });
+    });
+    peer.on("stream", (stream) => {
+      incommingVideo.current.srcObject = stream;
+    });
+
+    // peer.signal(callerSignal);
+    peer.signal(reciever);
+    // connectionRef.current = peer;
+  };
+  socket.on("make-call", (userId) => {
+    console.log("made call", userId);
+    callUser(userId);
+  });
+
+  socket.on("recieve-call", (userId) => {
+    console.log("recieve call", userId);
+
+    setReciever(userId);
+    answerCall(userId);
   });
 
   const handleSearch = () => {
-    // const text = textRef.current.value;
-    // socket.emit("find-someone", userId);
+    socket.emit("find-someone", userId);
   };
   return (
     <>
       <div className={c.container}>
-        <video ref={videoRef} className={c.video} />
-        <video ref={videoRef2} className={c.video2} />
+        <video ref={myVideo} className={c.video} />
+        <video ref={incommingVideo} className={c.video2} />
 
         <button onClick={handleSearch} className={c.button}>
           {calling ? "swipe" : "search"}
