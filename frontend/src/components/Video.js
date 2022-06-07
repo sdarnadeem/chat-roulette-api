@@ -12,6 +12,7 @@ const Video = () => {
   const incommingVideo = useRef();
 
   const socket = useMemo(() => {
+    // https://chatroultte.herokuapp.com
     return io("https://chatroultte.herokuapp.com", {
       withCredentials: true,
       extraHeaders: {
@@ -102,6 +103,10 @@ const Video = () => {
     console.log("made call", userId);
     callUser(userId);
     myVideo.current.srcObject = stream;
+    myVideo.current.addEventListener("loadedmetadata", () => {
+      myVideo.current.play();
+      myVideo.current.muted = true;
+    });
   });
 
   socket.on("answer-call", (userId) => {
@@ -110,6 +115,10 @@ const Video = () => {
     setReciever(userId);
     answerCall(userId);
     myVideo.current.srcObject = stream;
+    myVideo.current.addEventListener("loadedmetadata", () => {
+      myVideo.current.play();
+      myVideo.current.muted = true;
+    });
   });
   socket.on("error", (err) => {
     console.log(err);
