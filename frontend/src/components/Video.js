@@ -35,9 +35,6 @@ const Video = () => {
   });
 
   useEffect(() => {
-    window.addEventListener("beforeunload", function (event) {
-      socket.emit("unload", userId);
-    });
     socket.on("me", (userId) => {
       setUserId(userId);
     });
@@ -58,6 +55,15 @@ const Video = () => {
         });
       });
   }, []);
+
+  useEffect(() => {
+    window.addEventListener("unload", () => {
+      socket.emit("unload", reciever);
+      console.log("unload", reciever);
+      socket.disconnect();
+      console.log("disconnect");
+    });
+  }, [socket, reciever]);
 
   socket.on("connect", () => {
     console.log(socket.id); // x8WIv7-mJelg7on_ALbx

@@ -47,6 +47,11 @@ io.on("connection", (socket) => {
     socket.broadcast.emit("callEnded");
   });
 
+  socket.on("unload", (reciever) => {
+    console.log("unload event triggered");
+    io.to(reciever).emit("call-ended");
+  });
+
   socket.on("find-someone", (userId) => {
     users.add(userId);
     const connectedUsers = findSomeone();
