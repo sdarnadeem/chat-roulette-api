@@ -96,7 +96,8 @@ const Video = () => {
   };
 
   socket.on("make-call", (userId) => {
-    console.log("made call", userId);
+    console.log("make call", userId);
+    setReciever(userId);
     callUser(userId);
     myVideo.current.srcObject = stream;
     myVideo.current.addEventListener("loadedmetadata", () => {
