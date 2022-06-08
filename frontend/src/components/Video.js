@@ -132,6 +132,10 @@ const Video = () => {
     incommingVideo.current.srcObject = stream;
     myVideo.current.srcObject = null;
   });
+  const handleSpinnerClose = () => {
+    setLoading(false);
+    setCalling(false);
+  };
 
   const handleSearch = () => {
     setLoading(true);
@@ -152,7 +156,7 @@ const Video = () => {
         <>
           <video ref={incommingVideo} className={c.video} />
           <video ref={myVideo} className={c.video2} />
-          {loading && <Spinner />}
+          {loading && <Spinner onCancel={handleSpinnerClose} />}
           {!loading && (
             <>
               <button onClick={handleSearch} className={c.button}>
