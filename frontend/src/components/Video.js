@@ -2,12 +2,14 @@ import React, { useState, useRef, useEffect, useMemo } from "react";
 import { io } from "socket.io-client";
 import c from "./Video.module.css";
 import Peer from "simple-peer";
+import Spinner from "../components/Spinner";
 
 const Video = () => {
   const [userId, setUserId] = useState();
   const [reciever, setReciever] = useState();
   const [stream, setStream] = useState();
   const [calling, setCalling] = useState(false);
+  const [loading, setLoading] = useState(false);
   const myVideo = useRef();
   const incommingVideo = useRef();
 
@@ -67,29 +69,31 @@ const Video = () => {
 
   const callUser = (id) => {
     setCalling(true);
+    setLoading(false);
 
     peer1.on("signal", (data) => {
       peer2.signal(data);
     });
 
-    peer2.on("signal", (data) => {
-      peer1.signal(data);
-    });
-    peer2.on("stream", (stream) => {
+    // peer2.on("signal", (data) => {
+    //   peer1.signal(data);
+    // });
+    peer1.on("stream", (stream) => {
       incommingVideo.current.srcObject = stream;
     });
   };
 
   const answerCall = () => {
+    setLoading(false);
     setCalling(true);
 
     peer1.on("signal", (data) => {
       peer2.signal(data);
     });
 
-    peer2.on("signal", (data) => {
-      peer1.signal(data);
-    });
+    // peer2.on("signal", (data) => {
+    //   peer1.signal(data);
+    // });
     peer1.on("stream", (stream) => {
       incommingVideo.current.srcObject = stream;
     });
@@ -122,6 +126,7 @@ const Video = () => {
   });
 
   socket.on("call-ended", () => {
+    setLoading(true);
     console.log("callended");
     setCalling(false);
     incommingVideo.current.srcObject = stream;
@@ -129,6 +134,7 @@ const Video = () => {
   });
 
   const handleSearch = () => {
+    setLoading(true);
     if (!calling) {
       socket.emit("find-someone", userId);
     } else {
@@ -143,12 +149,18 @@ const Video = () => {
   return (
     <>
       <div className={c.container}>
-        <video ref={incommingVideo} className={c.video} />
-        <video ref={myVideo} className={c.video2} />
-
-        <button onClick={handleSearch} className={c.button}>
-          {calling ? "swipe" : "search"}
-        </button>
+        <>
+          <video ref={incommingVideo} className={c.video} />
+          <video ref={myVideo} className={c.video2} />
+          {loading && <Spinner />}
+          {!loading && (
+            <>
+              <button onClick={handleSearch} className={c.button}>
+                {calling ? "swipe" : "search"}
+              </button>
+            </>
+          )}
+        </>
       </div>
       {/* <input type="text" ref={textRef} /> */}
     </>
