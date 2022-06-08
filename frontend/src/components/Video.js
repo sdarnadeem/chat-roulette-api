@@ -13,7 +13,7 @@ const Video = () => {
 
   const socket = useMemo(() => {
     // https://chatroultte.herokuapp.com
-    return io("https://chatroultte.herokuapp.com", {
+    return io("http://localhost:3000", {
       withCredentials: true,
       extraHeaders: {
         "my-custom-header": "abcd",
@@ -64,10 +64,6 @@ const Video = () => {
   socket.on("user-connected", (userId) => {
     console.log(userId);
   });
-
-  // socket.on("found-one", (userId) => {
-  //   setReciever(userId);
-  // });
 
   const callUser = (id) => {
     setCalling(true);
@@ -124,8 +120,24 @@ const Video = () => {
     console.log(err);
   });
 
+  socket.on("call-ended", () => {
+    console.log("callended");
+    setCalling(false);
+    incommingVideo.current.srcObject = stream;
+    myVideo.current.srcObject = null;
+  });
+
   const handleSearch = () => {
-    socket.emit("find-someone", userId);
+    if (!calling) {
+      socket.emit("find-someone", userId);
+    } else {
+      console.log(reciever);
+      setCalling(false);
+      socket.emit("call-ended", reciever);
+      incommingVideo.current.srcObject = stream;
+      myVideo.current.srcObject = null;
+      socket.emit("find-someone", userId);
+    }
   };
   return (
     <>

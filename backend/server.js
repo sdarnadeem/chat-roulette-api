@@ -9,9 +9,10 @@ const httpServer = createServer(app);
 
 const users = new Set();
 
+// ["https://chat-roulette-drab.vercel.app", "http://localhost:3001"];
+
 const io = new Server(httpServer, {
   cors: {
-    // origin: "https://chat-roulette-drab.vercel.app/",
     origin: "http://localhost:3001",
     allowedHeaders: ["my-custom-header"],
     credentials: true,
@@ -63,6 +64,10 @@ io.on("connection", (socket) => {
     io.to(connectedUsers[1]).emit("answer-call", connectedUsers[0]);
     users.delete(connectedUsers[0]);
     users.delete(connectedUsers[1]);
+  });
+
+  socket.on("call-ended", (reciever) => {
+    io.to(reciever).emit("call-ended");
   });
 
   //   socket.on("callUser", (data) => {
